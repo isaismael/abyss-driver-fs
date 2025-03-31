@@ -1,0 +1,45 @@
+:root {
+    --sidebar-width: 250px;
+}
+body {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+.sidebar {
+    width: var(--sidebar-width);
+    background: #343a40;
+    color: white;
+    position: fixed;
+    height: 100vh;
+}
+.sidebar-header {
+    padding: 20px;
+    background: #2c3136;
+    border-bottom: 1px solid #495057;
+}
+.sidebar ul.components {
+    padding: 0;
+}
+.sidebar ul li a {
+    padding: 12px 20px;
+    color: #adb5bd;
+    display: block;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+.sidebar ul li a:hover {
+    color: white;
+    background: #495057;
+}
+.sidebar ul li.active > a {
+    color: white;
+    background: #495057;
+    border-left: 3px solid #0d6efd;
+}
+.main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    padding: 20px;
+}

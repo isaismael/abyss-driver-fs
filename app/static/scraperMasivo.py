@@ -4,7 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-class WebScraper:
+class WebScraperMasivo:
     def __init__(self):
         self.driver = None
 
@@ -16,16 +16,15 @@ class WebScraper:
         options.add_argument("--disable-dev-shm-usage")  # Evita problemas de memoria
         options.add_argument("--disable-gpu")  # Desactiva la GPU
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
         self.driver = webdriver.Chrome(options=options)
 
-    def extraer_urls(self, url, tags_dict):
-        """Extrae URLs y datos de productos."""
+    def search_product(self, url, tags_dict):
         self.url = url
-        if self.url is None:
-            raise ValueError("La URL no puede ser None")
-
-        self.setup_driver()
-        self.driver.get(self.url)
+        if url is not None:
+            #
+            self.setup_driver()
+            self.driver.get(self.url)
 
         try:
             WebDriverWait(self.driver, 20).until(
@@ -35,16 +34,18 @@ class WebScraper:
             # Extraer todos los enlaces de la página
             enlace_ficha = []
             enlaces = self.driver.find_elements(By.XPATH, tags_dict['url_ficha'])
+
             for enlace in enlaces:
                 href = enlace.get_attribute("href")
                 if href:
                     enlace_ficha.append(href)
+                    primeros_5 = enlace_ficha[:5]
+                    enlace_ficha = primeros_5
 
         except Exception as e:
             print(f"Error al extraer URLs: {e}")
             return
-
-        # Extraer datos de cada ficha
+        
         nombre_producto = []
         url_img = []
         precio_actual = []
@@ -52,7 +53,7 @@ class WebScraper:
         porcentaje_descuento = []
         cuotas = []
         envio = []
-        
+
         if enlace_ficha:
             print(f'No está vacío, tiene longitud: {len(enlace_ficha)}')
             # recorremos las url
@@ -132,7 +133,7 @@ class WebScraper:
         # Cerrar el navegador
         self.driver.quit()
 
-        self.info_scrapper = {
+        self.info_scrapper_masivo = {
             'nombre_producto': nombre_producto,
             'url_img': url_img,
             'precio_actual': precio_actual,
@@ -145,4 +146,6 @@ class WebScraper:
         
         
         #print(self.info_scrapper)
-        return self.info_scrapper
+        return self.info_scrapper_masivo
+
+            
