@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, url_for, request, flash, redirect
 import pandas as pd
 import os
 
+from app.models import models
+
 from app.static.scraper import WebScraper
 from app.static.scraperMasivo import WebScraperMasivo
 
@@ -22,10 +24,6 @@ tags_dict = {
 def home():
     return render_template('home.html')
 
-@home_bp.route('/login')
-def login():
-    return render_template('login.html')
-
 @home_bp.route('/busqueda')
 def busqueda():
     return render_template('busqueda.html')
@@ -39,7 +37,6 @@ def scraper():
         info = scraper.extraer_urls(url, tags_dict)
         return render_template('busqueda.html', search=search, info=info)
     return render_template('busqueda.html')
-
 
 @home_bp.route('/process_excel', methods=['POST'])
 def process_excel():
