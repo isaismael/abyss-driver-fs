@@ -61,3 +61,19 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = User.query.get_or_404(user_id)
+        
+@auth_bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('auth.login'))
+
+# ESTA FUNCION ES LA QUE SE ENCARGA DE PROTEGER LAS RUTAS, SI INICIÓ SESSION O NO
+import functools
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        return view(*args, **kwargs)
+    return wrapped_view

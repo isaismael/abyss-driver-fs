@@ -11,8 +11,12 @@ def create_app():
     db.init_app(app)
 
     # importar BP
+    from app.routes.index import bp_index
     from app.routes.home import home_bp
     from app.routes.auth import auth_bp
+    
+    # acá voy a registrando todos los bp
+    app.register_blueprint(bp_index)
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp)
     

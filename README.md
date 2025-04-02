@@ -1,2 +1,7 @@
 # abyss-driver-fs
-pip install -r requirements.txt
+
+#para frizar nuestras librerias:
+    pip freeze > requirements.txt
+
+#Para instalar todas nuestras librerias:
+    pip install -r requirements.txt

@@ -3,6 +3,7 @@ import pandas as pd
 import os
 
 from app.models import models
+from app.routes.auth import login_required
 
 from app.static.scraper import WebScraper
 from app.static.scraperMasivo import WebScraperMasivo
@@ -21,14 +22,19 @@ tags_dict = {
 }
 
 @home_bp.route('/home')
+@login_required
 def home():
     return render_template('home.html')
 
+
 @home_bp.route('/busqueda')
+@login_required
+
 def busqueda():
     return render_template('busqueda.html')
 
 @home_bp.route('/scraper', methods=['GET'])
+@login_required
 def scraper():
     search = request.args.get('q', '')  # Para GET usamos request.args
     if search:
@@ -39,6 +45,7 @@ def scraper():
     return render_template('busqueda.html')
 
 @home_bp.route('/process_excel', methods=['POST'])
+@login_required
 def process_excel():
     if 'excel' in request.files:
         excel_file = request.files['excel']
