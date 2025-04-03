@@ -16,6 +16,14 @@
                                 <label for="password">Password</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
+                            <div class="form-group">
+                                <label for="role">Rol</label>
+                                <select class="form-control" id="role" name="role" required>
+                                    <option value="">Seleccione un rol</option>
+                                    <option value="1">Admin</option>
+                                    <option value="2">Catalogación</option>
+                                </select>
+                            </div>
                             <br>
                             <div class="text-center">
                                 <input type="submit" class="btn btn-primary" value="Registrar usuario">
@@ -38,7 +46,4 @@
     </div>
     {% endfor %}
 </div>
-
-
 {% endblock %}
-

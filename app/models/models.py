@@ -1,13 +1,15 @@
 from app import db
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.Text, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+    role_id = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, role_id):
         self.username = username
         self.password = password
+        self.role_id = role_id
 
     def __repr__(self):
         return f'<User: {self.username} >'

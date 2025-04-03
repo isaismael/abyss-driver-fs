@@ -7,22 +7,44 @@ from app.models.models import User
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-@auth_bp.route('/register', methods = ['GET', 'POST'])
+# ESTA FUNCION ES LA QUE SE ENCARGA DE PROTEGER LAS RUTAS, SI INICIÓ SESSION O NO
+import functools
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        return view(*args, **kwargs)
+    return wrapped_view
+
+
+@auth_bp.route('/register', methods=['GET', 'POST'])
+@login_required
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        role_id = request.form['role']
 
-        user = User(username, generate_password_hash(password))
+        # Create user with all three parameters
+        user = User(
+            username=username,
+            password=generate_password_hash(password),
+            role_id=role_id
+        )
 
         error = None
+        user_name = User.query.filter_by(username=username).first()
 
-        user_name = User.query.filter_by(username = username).first()
-
-        if user_name == None:
-            db.session.add(user)
-            db.session.commit()
-            return redirect(url_for('auth.register'))
+        if user_name is None:
+            try:
+                db.session.add(user)
+                db.session.commit()
+                return redirect(url_for('auth.register'))
+            except Exception as e:
+                db.session.rollback()
+                error = f'Error al registrar usuario: {str(e)}'
         else:
             error = f'El usuario {username} ya existe'
 
@@ -67,13 +89,3 @@ def logout():
     session.clear()
     return redirect(url_for('auth.login'))
 
-# ESTA FUNCION ES LA QUE SE ENCARGA DE PROTEGER LAS RUTAS, SI INICIÓ SESSION O NO
-import functools
-
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(*args, **kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
-        return view(*args, **kwargs)
-    return wrapped_view

@@ -25,11 +25,13 @@
             <li class="nav-item {% if request.endpoint == 'home.busqueda' %}active{% endif %}">
                 <a href="{{ url_for('home.busqueda') }}" class="nav-link sidebar-link">🔍 Web Scraping</a>
             </li>
+            {% if g.user.role_id == 1 %}
             <li class="nav-item {% if request.endpoint == 'auth.register' %}active{% endif %}">
                 <a href="{{ url_for('auth.register') }}" class="nav-link sidebar-link">
                     👤 Registrar usuario
                 </a>
             </li>
+            {% endif %}
             <li class="nav-item" >
                 <a href="{{url_for('auth.logout')}}">↩ Cerrar sesíon</a>
             </li>
