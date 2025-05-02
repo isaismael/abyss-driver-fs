@@ -43,3 +43,94 @@ body {
     width: calc(100% - var(--sidebar-width));
     padding: 20px;
 }
+
+.contenedor-table{
+    overflow-x: scroll;
+}
+
+.sellers{
+    font-weight: 700;
+    margin-top: 1rem;
+}
+
+.sellers-title{
+    text-align: left;
+}
+
+.sellers-selects{
+    margin-top: .5rem;
+    display: flex;
+}
+
+.sellers-selects span{
+    margin-left: 5px;
+    margin-right: 20px;
+}
+
+    /* Ajustes generales de la tabla */
+    table {
+        table-layout: fixed;
+        word-wrap: break-word;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    thead {
+        background-color: #343a40;
+        /* gris oscuro */
+        color: #ffffff;
+    }
+
+    thead th {
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+        /* gris claro */
+    }
+
+    tbody tr:hover {
+        background-color: #f1f1f1;
+        /* hover más suave */
+        transition: background-color 0.2s ease;
+    }
+
+    td,
+    th {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        vertical-align: top;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    /* Estilos especiales */
+    .off-col {
+        color: #dc3545;
+        /* rojo Bootstrap */
+        font-weight: bold;
+    }
+
+    .envio-col {
+        color: #28a745;
+        /* verde Bootstrap */
+        font-weight: bold;
+    }
+
+    .plan-cuotas {
+        font-size: 0.85rem;
+        color: #6c757d;
+        /* gris Bootstrap */
+    }
+
+    /* Diferencia en dinero resaltada */
+    .diferencia {
+        font-weight: bold;
+        color: #007bff;
+        /* azul Bootstrap */
+    }

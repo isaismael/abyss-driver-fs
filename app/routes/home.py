@@ -6,20 +6,13 @@ from app.models import models
 from app.routes.auth import login_required
 
 from app.static.scraper import WebScraper
-from app.static.scraperMasivo import WebScraperMasivo
+
+from app.static.scraperFravega import ScraperFravega
+
+from app.static.tags_dict import TagsDict
 
 home_bp = Blueprint('home', __name__)
 
-tags_dict = {
-    'url_ficha': "//a[@class='poly-component__title']",
-    'nombre_producto': "//h1[@class='ui-pdp-title']",
-    'url_img': "//img[@class='ui-pdp-image ui-pdp-gallery__figure__image']",
-    'precio_actual': "//span[@class='andes-money-amount ui-pdp-price__part andes-money-amount--cents-superscript andes-money-amount--compact']",
-    'precio_antes': "//s[@class='andes-money-amount ui-pdp-price__part ui-pdp-price__original-value andes-money-amount--previous andes-money-amount--cents-superscript andes-money-amount--compact']",
-    'porcentaje_descuento': "//span[@class='andes-money-amount__discount ui-pdp-family--REGULAR']",
-    'cuotas': "//p[@id='pricing_price_subtitle']",
-    'envio': "//p[@class='ui-pdp-color--BLACK ui-pdp-family--REGULAR ui-pdp-media__title']",
-}
 
 @home_bp.route('/home')
 @login_required
@@ -47,45 +40,73 @@ def scraper():
 @home_bp.route('/process_excel', methods=['POST'])
 @login_required
 def process_excel():
-    if 'excel' in request.files:
-        excel_file = request.files['excel']
-        
-        # Leer el archivo Excel
-        try:
-            df = pd.read_excel(excel_file, header=None)
-            # Obtener la primera columna (asumiendo que es la columna 0)
-            lista = df.iloc[:, 0]
-            
-            url = []
-            resultados_totales = {
-                'nombre_producto': [],
-                'url_img': [],
-                'precio_actual': [],
-                'precio_antes': [],
-                'porcentaje_descuento': [],
-                'cuotas': [],
-                'envio': [],
-                'url_ficha': []
-            }
-
-            if lista is not None:
-                for l in lista:
-                    url_lista = f"https://listado.mercadolibre.com.ar/{l}#D[A:{l}]"
-                    url.append(url_lista)
-            
-            for u in url:
-                scraper_masivo = WebScraperMasivo()
-                info_masiva = scraper_masivo.search_product(u, tags_dict)
-                
-                # Combinar los resultados de cada búsqueda
-                if info_masiva:
-                    for key in resultados_totales:
-                        resultados_totales[key].extend(info_masiva[key][:5])  # Solo los primeros 5 de cada búsqueda
-            
-            return render_template('busqueda.html', info_masiva=resultados_totales)
-            
-        except Exception as e:
-            print(f"Error al procesar el archivo: {str(e)}")
-            return render_template('busqueda.html', error=str(e))
+    mercadolibre = 'mercadolibre' in request.form
+    fravega = 'fravega' in request.form
     
-    return render_template('busqueda.html', error="No se encontró archivo para procesar")
+    competidores = []
+    
+    if fravega:
+        competidores.append('Fravega')
+        if 'excel' in request.files:
+            excel_file = request.files['excel']
+            try:
+                df = pd.read_excel(excel_file)
+                print(df.columns)
+                
+                lista = df['ID_FRABRICANTE']
+                
+                tags_dict_instance = TagsDict()
+                tags_dict = tags_dict_instance.fravega
+                url_search = tags_dict['url_search']
+                
+                resultados_totales = {
+                    'nombre_articulo': [],
+                    'costo_actual': [],
+                    'utilidad': [],
+                    'pvp_nuestro': [],
+                    'plan_cuotas': [],
+                    'precio_tachado': [],
+                    'off': [],
+                    'pvp': [],
+                    'envio': [],
+                    'id_fabricante': [] 
+                }
+
+                url_array = []
+                
+                if lista is not None:
+                    for l in lista:
+                        url_lista = f"{url_search}{l}"
+                        url_array.append(url_lista)
+                
+                for index, url in enumerate(url_array):
+                    scraper = ScraperFravega()
+                    scraper_fravega = scraper.search_product_fravega(url, tags_dict)
+
+                    # Primero cargamos los datos que vienen del Excel
+                    resultados_totales['nombre_articulo'].append(df['NOMBRES_DEL_ARTICULO'].iloc[index])
+                    resultados_totales['costo_actual'].append(df['COSTO ACTUAL'].iloc[index])
+                    resultados_totales['utilidad'].append(df['Utilidad'].iloc[index])
+                    resultados_totales['pvp_nuestro'].append(df['PVP'].iloc[index])
+                    
+                    resultados_totales['id_fabricante'].append(lista.iloc[index])
+
+                    # Luego los datos que vienen del scraping
+                    if scraper_fravega:
+                        for campo in ['plan_cuotas', 'precio_tachado', 'off', 'pvp', 'envio']:
+                            resultados_totales[campo].append(scraper_fravega.get(campo, ''))
+                    else:
+                        # Si no encontró nada, ponemos valores vacíos
+                        for campo in ['plan_cuotas', 'precio_tachado', 'off', 'pvp', 'envio']:
+                            resultados_totales[campo].append('')
+                
+                print(resultados_totales)
+                return render_template('busqueda.html', info_masiva=resultados_totales)
+            
+            except Exception as e:
+                print(f"Error al procesar el archivo: {str(e)}")
+                return render_template('busqueda.html', error=str(e))
+                
+    return render_template('busqueda.html', error="No se encontró archivo para procesar", competidores=competidores)
+
+    

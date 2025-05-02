@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 <div id="content-container">
-    <div class="">
-        <h3 class="h1 text-center mb-5" style="font-weight: bold;
-    text-decoration: underline;">Web Scraping MeLi</h3>
-    </div>
+    <!--
+        <div class="">
+            <h3 class="h1 text-center mb-5" style="font-weight: bold;
+        text-decoration: underline;">Scraper</h3>
+        </div>
+    -->
     <!-- form -->
     <div class="container text-center">
         <!-- Formulario de búsqueda manual (GET) -->
@@ -22,7 +24,7 @@
         </form>
 
         <!-- Formulario de carga de archivos (POST) -->
-        <form action="{{ url_for('home.process_excel') }}" method="POST" enctype="multipart/form-data">
+        <form id="importForm" action="{{ url_for('home.process_excel') }}" method="POST" enctype="multipart/form-data">
             <div class="row">
                 <div class="col">
                     <label for="excel" class="form-label">Para búsqueda masiva importar Excel/CSV:</label>
@@ -30,115 +32,80 @@
                         accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                 </div>
                 <div class="col mt-2">
-                    <button type="submit" class="btn btn-success rounded-4 w-50 mt-4">Importar</button>
+                    <button type="submit" id="importButton"
+                        class="btn btn-success rounded-4 w-50 mt-4">Importar</button>
+
                 </div>
             </div>
+            <!-- Seleccionamos los sellers a scrapear -->
+            <div class="sellers">
+                <div class="sellers-title">Selecciona los sellers a Scrapear</div>
+                <div class="sellers-selects">
+                    <input type="radio" name="mercadolibre" id="mercadolibre"><span>Mercado libre</span>
+                    <input type="radio" name="fravega" id="fravega"><span>Fravega</span>
+                    <input type="radio" name="oscarbarbieri" id="oscarbarbieri"><span>Oscar Barbieri</span>
+                    <input type="radio" name="castillo" id="castillo"><span>Castillo</span>
+                    <input type="radio" name="oncity" id="oncity"><span>On City</span>
+                </div>
+                <!--Cerramos los sellers-->
         </form>
     </div>
-    <!--tabla-->
-    <table class="table table-striped table-hover table-bordered rounded" style="width:100%; margin-top: 2rem">
-        <thead class="thead-dark">
+
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% elif info_masiva %}
+    <table class="table table-hover table-bordered rounded" style="width: 100%; margin-top: 2rem;">
+        <thead>
             <tr>
-                <th scope="col" class="text-center align-middle">Nombre</th>
-                <th scope="col" class="text-center align-middle" style="width: 50px;">Imagen</th>
-                <th scope="col" class="text-center align-middle">Precio Actual</th>
-                <th scope="col" class="text-center align-middle">Precio Anterior</th>
-                <th scope="col" class="text-center align-middle">Descuento</th>
-                <th scope="col" class="text-center align-middle">Cuotas</th>
-                <th scope="col" class="text-center align-middle">Envío</th>
-                <th scope="col" class="text-center align-middle">URL Producto</th>
+                <th>Nombre del artículo</th>
+                <th>ID Fabricante</th>
+                <th>Costo actual</th>
+                <th>Utilidad</th>
+                <th>PVP Nuestro</th>
+                <th>Plan de Cuotas</th>
+                <th>Precio Tachado</th>
+                <th>Off</th>
+                <th>PVP</th>
+                <th>Diferencia %</th>
+                <th>Diferencia $</th>
+                <th>Envío</th>
             </tr>
         </thead>
         <tbody>
-            {% if info %}
-            {% for i in range(info['nombre_producto']|length) %}
-            <tr class="h4">
-                <td class="align-middle h4">{{info['nombre_producto'][i]}}</td>
-                <td class="text-center align-middle" style="width: 50px;">
-                    <img src="{{info['url_img'][i]}}" alt="" style="width: 50px;">
+            {% for i in range(info_masiva['id_fabricante']|length) %}
+            <tr>
+                <td>{{ info_masiva['nombre_articulo'][i] }}</td>
+                <td>{{ info_masiva['id_fabricante'][i] }}</td>
+                <td>{{ info_masiva['costo_actual'][i] }}</td>
+                <td>{{ info_masiva['utilidad'][i] }}</td>
+                <td>{{ info_masiva['pvp_nuestro'][i] }}</td>
+                <td class="plan-cuotas">
+                    {{ info_masiva['plan_cuotas'][i]|first|replace('|||', '') }}
                 </td>
-                <td class="text-center align-middle font-weight-bold text-success">
-                    {{info['precio_actual'][i]}}
+                <td>{{ info_masiva['precio_tachado'][i] }}</td>
+                <td class="off-col">{{ info_masiva['off'][i] }} %</td>
+                <td>{{ info_masiva['pvp'][i] }}</td>
+                <td>-</td>
+                <td class="diferencia">
+                    $ {{
+                    (info_masiva['pvp_nuestro'][i]|replace('$', '')|replace('.', '')|replace(',', '.')|float -
+                    info_masiva['pvp'][i]|replace('$', '')|replace('.', '')|replace(',', '.')|float)
+                    | round(2)
+                    }}
                 </td>
-                <td class="text-center align-middle text-muted">
-                    <s>{{info['precio_antes'][i]}}</s>
-                </td>
-                <td class="text-center align-middle">
-                    <span class="badge text-bg-danger">
-                        {{info['porcentaje_descuento'][i]}}
-                    </span>
-                </td>
-                <td class="text-center align-middle text-success">
-                    {{info['cuotas'][i]}}
-                </td>
-                <td class="text-center align-middle">
-                    {{info['envio'][i]}}
-                </td>
-                <td class="text-center align-middle text-success text-truncate" style="max-width: 150px;">
-                    <a href="{{info['url_ficha'][i]}}" target="_blank">Ir al sitio</a>
-                </td>
-            </tr>
-            {% endfor %}
-            {% endif %}
 
-            {% if info_masiva %}
-            {% for i in range(info_masiva['nombre_producto']|length) %}
-            <tr class="h4">
-                <td class="align-middle h4">{{info_masiva['nombre_producto'][i]}}</td>
-                <td class="text-center align-middle" style="width: 50px;">
-                    <img src="{{info_masiva['url_img'][i]}}" alt="" style="width: 50px;">
-                </td>
-                <td class="text-center align-middle font-weight-bold text-success">
-                    {{info_masiva['precio_actual'][i]}}
-                </td>
-                <td class="text-center align-middle text-muted">
-                    <s>{{info_masiva['precio_antes'][i]}}</s>
-                </td>
-                <td class="text-center align-middle">
-                    <span class="badge text-bg-danger">
-                        {{info_masiva['porcentaje_descuento'][i]}}
-                    </span>
-                </td>
-                <td class="text-center align-middle text-success">
-                    {{info_masiva['cuotas'][i]}}
-                </td>
-                <td class="text-center align-middle">
-                    {{info_masiva['envio'][i]}}
-                </td>
-                <td class="text-center align-middle text-success text-truncate" style="max-width: 150px;">
-                    <a href="{{info_masiva['url_ficha'][i]}}" target="_blank">Ir al sitio</a>
+                <td class="envio-col">
+                    {{ info_masiva['envio'][i]|first|replace('||', '') }}
                 </td>
             </tr>
             {% endfor %}
-            {% endif %}
         </tbody>
     </table>
-    <!-- STYLE -->
-    <style>
-        label {
-            font-weight: 700;
-        }
 
-        .rounded {
-            border-radius: 10px !important;
-            overflow: hidden;
-        }
-
-        .table thead th {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .table td {
-            font-size: 0.95rem;
-        }
-
-        .badge-pill {
-            padding: 5px 10px;
-            font-size: 0.85rem;
-        }
-    </style>
+    {% else %}
+    <h3 class="mt-4">No hay resultados para mostrar.</h3>
+    {% endif %}
 
 </div>
+
 {% endblock %}
